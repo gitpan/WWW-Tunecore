@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+
+use WWW::Tunecore;
+
+my $tunecore = new WWW::Tunecore( auto_login => 1 ); # Prompt for password
+
+my $sales = $tunecore->download_sales or die $tunecore->error;
+
+print $sales;
+
+

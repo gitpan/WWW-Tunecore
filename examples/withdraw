@@ -1,0 +1,12 @@
+#!/usr/bin/perl -I../lib
+
+use WWW::Tunecore;
+
+my $tc = new WWW::Tunecore( auto_login => 1 );
+
+print "Logged in. Withdrawing funds.\n";
+my $amount = $tc->withdraw_funds;
+
+die $tc->error unless defined $amount;
+
+print "Withdrew $amount\n";

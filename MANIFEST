@@ -1,0 +1,12 @@
+Changes
+MANIFEST
+Makefile.PL
+README
+lib/WWW/Tunecore.pm
+t/00-load.t
+t/pod-coverage.t
+t/pod.t
+t/download.t
+examples/withdraw
+examples/download_sales
+META.yml                                 Module meta-data (added by MakeMaker)
