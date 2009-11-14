@@ -9,11 +9,11 @@ WWW::Tunecore - Control your Tunecore account in Perl
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 
 =head1 SYNOPSIS
@@ -24,13 +24,24 @@ withdraw funds and download your monthly sales reports.
 
     use WWW::Tunecore;
 
-    my $foo = WWW::Tunecore->new();
-    ...
+    my $tc = new WWW::Tunecore( $account, $password );
 
-=head1 EXPORT
+    # Get sales
+    print "Getting sales report...\n";
+    my $sales = $tc->download_sales or die $tc->error;
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+    my $filename = "/path/to/tunecore_sales.csv";
+
+    open FH, '>', $filename or die "Can't write sales to $filename\n";
+
+    print FH $sales;
+
+    close FH;
+
+    # Withdraw funds
+    print "Withdrawing funds...\n";
+    $tc->withdraw_funds or die $tc->error;
+
 
 =cut
 
@@ -83,6 +94,15 @@ field site_info => {
 
 Withdraw all funds to paypal using the email address you used to log in.
 
+Returns the amount withdrawn.  If there's no balance, returns "0.00".
+Returns undef if there's an error.
+
+    my $amount = $tc->withdraw_funds;
+
+    die $tc->error if ( $tc->error );
+
+    print "Withdrew: \$$amount\n";
+
 =cut
 
 sub withdraw_funds {
@@ -113,19 +133,19 @@ sub withdraw_funds {
     # First page - enter the withdrawal amount and payment method
     $self->submit_form(
         form_no => 1,
-        button => 'Withdraw Funds',
+        button => 'commit',
         fields_ref => {
             'withdrawal[payment_amount]' => "$amount",
             'withdrawal[payment_method]' => 'paypal'
         },
-        re2 => 'Withdrawing: .*?'.">$bal"
+        re2 => 'Withdrawing\s+\$'."$bal"
     ) or return undef;
 
     $self->debug( "Submitting withdrawl form 2" );
     # Second page, confirm the amount and enter the email address
     $self->submit_form(
         form_no => 1,
-        button => 'Withdraw Funds',
+        button => 'commit',
         fields_ref => {
             'withdrawal[paypal_address]' => $paypal_email
         }
@@ -134,8 +154,11 @@ sub withdraw_funds {
     # Make sure the withdrawl happened - it just returns us to the "my
     # account" page.
     
-    $self->current_page->content =~ /Current Balance: .*?\$([0-9]+\.[0-9]+) /smo;
-    unless ( $1 && ( $1 = "0.00" ) ) {
+    $self->debug( "\n\n\n\n\n\nPage content after withdrawing:\n".
+        $self->current_page->content );
+
+    $self->current_page->content =~ /Current Balance.*?\$([0-9]+\.[0-9]+) /smo;
+    unless ( $1 && ( $1 eq "0.00" ) ) {
         $self->error( "Withdrawl failed while submitting final withdrawl form." );
         return undef;
     }
@@ -152,7 +175,7 @@ Downloads the most recent sales report.
     
     my $tc = new WWW::Tunecore( $account, $password );
     
-    my $sales = $tunecore->download_sales or die $tunecore->error;
+    my $sales = $tc->download_sales or die $tc->error;
 
     print $sales;
 
@@ -167,7 +190,7 @@ sub download_sales {
 
     $self->get_page( 'https://www.tunecore.com/my_account/exports',
         re => 'Download Accounting Files' ) or return undef;
-    print "Got Download page\n";
+    $self->debug( "Got Download page" );
     $self->follow_link( text_regex => qr/-sales-.*?\.csv/, re=>'TC Reporting Month' ) or return undef;
     
     return $self->current_page->content;
@@ -190,7 +213,7 @@ this method and comment out the return:
 
 sub debug {
 
-    return;
+#    return;
     my $message = shift;
     
     print $message."\n";

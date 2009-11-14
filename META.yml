@@ -1,11 +1,11 @@
 --- #YAML:1.0
 name:                WWW-Tunecore
-version:             0.01
+version:             0.03
 abstract:            Control your Tunecore account in Perl
 license:             perl
 author:              
     - Grant Grueninger <grantg@cpan.org>
-generated_by:        ExtUtils::MakeMaker version 6.44
+generated_by:        ExtUtils::MakeMaker version 6.42
 distribution_type:   module
 requires:     
     Test::More:                    0

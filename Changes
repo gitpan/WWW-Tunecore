@@ -1,5 +1,15 @@
 Revision history for WWW-Tunecore
 
+0.03    2009-11-14
+        - Updated withdraw_funds method to work with button name
+          and formatting changes
+
+0.02    2009-09-15
+        - Updated docs for withdraw_funds method, added examples.
+        - Corrected example scripts in docs for get_sales method.
+        - Fixed "Modification of a read-only value attempted" error
+          in withdraw_funds.
+
 0.01    2009-08-07
         Initial version. Able to log in, withdraw funds, and
         download sales.
